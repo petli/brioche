@@ -1,0 +1,18 @@
+[build-system]
+requires = ["flit_core >=2,<4"]
+build-backend = "flit_core.buildapi"
+
+[tool.flit.metadata]
+module = "brioche"
+author = "Peter Liljenberg"
+author-email = "peter.liljenberg@gmail.com"
+home-page = "https://github.com/petli/brioche"
+classifiers = ["License :: OSI Approved :: MIT License"]
+description-file = "README.md"
+requires-python = "~=3.3"
+keywords = "biome, biomization, plant function type, pollen"
+
+requires = [
+    "pandas ~= 1.1",
+    "gspread ~= 3.6",
+]
