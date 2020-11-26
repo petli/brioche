@@ -1,3 +1,6 @@
+# Copyright 2020 Peter Liljenberg <peter.liljenberg@gmail.com>
+# Open source under the MIT license (see LICENSE)
+
 from .helpers import dataframe_from_gspread_sheet, safe_int
 
 class MappingBase:

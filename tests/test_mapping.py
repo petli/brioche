@@ -1,3 +1,6 @@
+# Copyright 2020 Peter Liljenberg <peter.liljenberg@gmail.com>
+# Open source under the MIT license (see LICENSE)
+
 # pylint: disable=missing-function-docstring missing-module-docstring import-error
 
 import pytest
