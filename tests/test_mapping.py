@@ -6,75 +6,65 @@
 import pytest
 import pandas as pd
 
-from brioche import PftBiomeMapping, PftTaxaMapping
+from brioche import BiomePftMapping, TaxaPftMapping
 
 def test_create_pft_biome_mapping():
-    pft_biomes = PftBiomeMapping(pd.DataFrame.from_records(
-        columns=('PFT', 'Biome A', 'Biome B'),
+    pft_biomes = BiomePftMapping(pd.DataFrame.from_records(
+        columns=('Biome', 1, 2, 3),
         data=[
-            (1, 0, 1),
-            (2, 1, 1),
-            (3, 0, 0),
+            ('Biome A', 0, 1, 0),
+            ('Biome B', 1, 1, 0)
             ]))
 
-    result = sorted(pft_biomes.mapping.to_dict('records'), key=lambda d: (d['PFT'], d['biome']))
+    result = sorted(pft_biomes.mapping.to_dict('records'), key=lambda d: (d['pft'], d['biome']))
 
     assert result == [
-        dict(PFT=1, biome='Biome A', biome_has_pft=0),
-        dict(PFT=1, biome='Biome B', biome_has_pft=1),
-        dict(PFT=2, biome='Biome A', biome_has_pft=1),
-        dict(PFT=2, biome='Biome B', biome_has_pft=1),
-        dict(PFT=3, biome='Biome A', biome_has_pft=0),
-        dict(PFT=3, biome='Biome B', biome_has_pft=0),
+        dict(pft=1, biome='Biome A', biome_has_pft=0),
+        dict(pft=1, biome='Biome B', biome_has_pft=1),
+        dict(pft=2, biome='Biome A', biome_has_pft=1),
+        dict(pft=2, biome='Biome B', biome_has_pft=1),
+        dict(pft=3, biome='Biome A', biome_has_pft=0),
+        dict(pft=3, biome='Biome B', biome_has_pft=0),
     ]
 
 
 def test_create_pft_taxa_mapping():
-    pft_taxas = PftTaxaMapping(pd.DataFrame.from_records(
-        columns=('PFT', 'Taxa A', 'Taxa B'),
+    pft_taxas = TaxaPftMapping(pd.DataFrame.from_records(
+        columns=('Taxa', 1, 2, 3),
         data=[
-            (1, 1, 0),
-            (2, 0, 1),
-            (3, 1, 1),
+            ('Taxa A', 1, 0, 1),
+            ('Taxa B', 0, 1, 1)
             ]))
             
-    result = sorted(pft_taxas.mapping.to_dict('records'), key=lambda d: (d['PFT'], d['taxa']))
+    result = sorted(pft_taxas.mapping.to_dict('records'), key=lambda d: (d['pft'], d['taxa']))
 
     assert result == [
-        dict(PFT=1, taxa='Taxa A', taxa_in_pft=1),
-        dict(PFT=1, taxa='Taxa B', taxa_in_pft=0),
-        dict(PFT=2, taxa='Taxa A', taxa_in_pft=0),
-        dict(PFT=2, taxa='Taxa B', taxa_in_pft=1),
-        dict(PFT=3, taxa='Taxa A', taxa_in_pft=1),
-        dict(PFT=3, taxa='Taxa B', taxa_in_pft=1),
+        dict(pft=1, taxa='Taxa A', taxa_in_pft=1),
+        dict(pft=1, taxa='Taxa B', taxa_in_pft=0),
+        dict(pft=2, taxa='Taxa A', taxa_in_pft=0),
+        dict(pft=2, taxa='Taxa B', taxa_in_pft=1),
+        dict(pft=3, taxa='Taxa A', taxa_in_pft=1),
+        dict(pft=3, taxa='Taxa B', taxa_in_pft=1),
     ]
 
 
-@pytest.mark.parametrize('mapping_class', [PftBiomeMapping, PftTaxaMapping])
-def test_matrix_must_contain_pft_column(mapping_class):
+@pytest.mark.parametrize('mapping_class', [BiomePftMapping, TaxaPftMapping])
+def test_matrix_must_contain_key_column(mapping_class):
     data = pd.DataFrame.from_records(
-        columns=('PFFT', 'Column1', 'Column2'),
-        data=[(1, 0, 1)])
+        columns=('foo', 1, 2),
+        data=[('bar', 0, 1)])
 
     with pytest.raises(ValueError):
         mapping_class(data)
 
 
-@pytest.mark.parametrize('mapping_class', [PftBiomeMapping, PftTaxaMapping])
-def test_mapping_must_contain_only_1_and_0(mapping_class):
+@pytest.mark.parametrize('mapping_class', [BiomePftMapping, TaxaPftMapping])
+@pytest.mark.parametrize('value', [-1, 2, 0.5])
+def test_mapping_must_contain_only_1_and_0(mapping_class, value):
     data = pd.DataFrame.from_records(
-        columns=('PFFT', 'Column1', 'Column2'),
-        data=[(1, 2, -1)])
+        columns=(mapping_class.key_name, 1),
+        data=[('foo', value)])
 
     with pytest.raises(ValueError):
         mapping_class(data)
 
-
-@pytest.mark.parametrize('mapping_class', [PftBiomeMapping, PftTaxaMapping])
-def test_pft_key_name_can_be_changed(mapping_class):
-    data = pd.DataFrame.from_records(
-        columns=('PFFT', 'Column1', 'Column2'),
-        data=[(1, 0, 1)])
-
-    result = mapping_class(data, pft_key='PFFT')
-    assert result.pft_key == 'PFFT'

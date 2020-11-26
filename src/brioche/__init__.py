@@ -7,6 +7,6 @@
 __version__ = "0.0.2"
 
 from .helpers import safe_int, dataframe_from_gspread_sheet
-from .mappings import PftBiomeMapping, PftTaxaMapping
+from .mappings import BiomePftMapping, TaxaPftMapping
 from .samples import PollenCounts, PollenPercentages
 from .biomization import Biomization
