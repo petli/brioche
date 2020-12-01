@@ -15,17 +15,24 @@ class PollenSamples:
     @property
     def site(self): return self._site
 
-    def get_percentages(self):
+    def get_percentages(self, round=None): 
         raise NotImplementedError()
-       
+
 
 class PollenCounts(PollenSamples):
-    def get_percentages(self): 
+    def get_percentages(self, round=None): 
         sums = self.samples.sum(axis=1)
         percentages = self.samples.apply(lambda column: column * 100 / sums)
+
+        if round is not None:
+            percentages = percentages.round(round)
+
         return PollenPercentages(percentages, self.site)
 
 
 class PollenPercentages(PollenSamples):
-    def get_percentages(self): 
-        return self
+    def get_percentages(self, round=None):
+        if round is None:
+            return self
+        else:
+            return PollenPercentages(self.samples.round(round), self.site)
