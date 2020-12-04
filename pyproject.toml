@@ -15,4 +15,5 @@ keywords = "biome, biomization, plant function type, pollen"
 requires = [
     "pandas ~= 1.1",
     "gspread ~= 3.6",
+    "numpy ~= 1.1",
 ]

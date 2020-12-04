@@ -47,7 +47,7 @@ def test_calculate_rounded_percentages_from_counts(decimals, expected_value):
             (1, 5)
         ]))
 
-    percentages = counts.get_percentages(round=decimals)
+    percentages = counts.get_percentages(decimals=decimals)
     result = percentages.samples.iat[0, 0]
 
     assert result == pytest.approx(expected_value)
@@ -65,7 +65,7 @@ def test_get_rounded_percentages(decimals, expected_value):
             (100 / 6.0, )
         ]))
 
-    rounded = percentages.get_percentages(round=decimals)
+    rounded = percentages.get_percentages(decimals=decimals)
     result = rounded.samples.iat[0, 0]
 
     assert result == pytest.approx(expected_value)
@@ -82,3 +82,23 @@ def test_get_percentages_without_rounding_returns_the_same_object():
     result = percentages.get_percentages()
 
     assert result is percentages
+
+
+@pytest.mark.parametrize(('percentage', 'threshold', 'decimals', 'expected'), [
+    (25.5, 0.5, 2, 5.0),
+    (1.1, 1.0, 2, 0.32),
+    (1.1, 1.0, 3, 0.316),
+    (1.0, 1.0, 5, 0.0),
+    (0.1, 0.1, 5, 0.0),
+    ])
+def test_get_stabilized_using_default_threshold(percentage, threshold, decimals, expected):
+    percentages = PollenPercentages(pd.DataFrame.from_records(
+        columns=('TaxaA', ),
+        data=[
+            (percentage, )
+        ]))
+
+    stabilized = percentages.get_stabilized(default_threshold=threshold, decimals=decimals)
+    result = stabilized.samples.iat[0, 0]
+
+    assert result == pytest.approx(expected)
