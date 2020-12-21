@@ -6,9 +6,13 @@
 import pandas as pd
 import pytest
 
-from brioche import BiomePftMatrix, TaxaPftMatrix, Biomization, PollenCounts, StabilizedPollenSamples
+from brioche import \
+    BiomePftMatrix, TaxaPftMatrix, \
+    BiomePftList, TaxaPftList, \
+    Biomization, PollenCounts, \
+    StabilizedPollenSamples
 
-def test_join_mappings_into_biome_matrix():
+def test_join_matrix_mappings_into_biome_matrix():
     # taxa1: maps only through PFT 1 to biome 2
     # taxa2: maps only through PFT 2 to biome 1
     # taxa3: maps only to PFT 3, which doesn't map to any biome
@@ -35,10 +39,40 @@ def test_join_mappings_into_biome_matrix():
     result = biomization.taxa_biome_matrix.to_dict()
 
     assert result == dict(
-        biome1=dict(taxa1=0, taxa2=1, taxa3=0, taxa4=1),
-        biome2=dict(taxa1=1, taxa2=0, taxa3=0, taxa4=1)
+        biome1=dict(taxa1=0, taxa2=1, taxa4=1),
+        biome2=dict(taxa1=1, taxa2=0, taxa4=1)
     )
 
+def test_join_list_mappings_into_biome_matrix():
+    # taxa1: maps only through PFT 1 to biome 2
+    # taxa2: maps only through PFT 2 to biome 1
+    # taxa3: maps only to PFT 3, which doesn't map to any biome
+    # taxa4: maps through PFT 2/4 to biome1 and PFT 1/4 to biome 2
+
+    taxa_pfts = TaxaPftList(pd.DataFrame.from_records(
+            columns=('taxa', 'pft'),
+            data=[
+                ('taxa1', ['1', '3']),
+                ('taxa2', ['2', '3']),
+                ('taxa3', ['3']),
+                ('taxa4', ['1', '2', '3', '4'])
+                ]))
+
+    biome_pfts = BiomePftList(pd.DataFrame.from_records(
+            columns=('biome', 'pft'),
+            data=[
+                ('biome1', ['2', '4']),
+                ('biome2', ['1', '4'])
+                ]))
+
+    biomization = Biomization(taxa_pfts, biome_pfts)
+
+    result = biomization.taxa_biome_matrix.to_dict()
+
+    assert result == dict(
+        biome1=dict(taxa1=0, taxa2=1, taxa4=1),
+        biome2=dict(taxa1=1, taxa2=0, taxa4=1)
+    )
 
 def test_get_biome_affinity():
     taxa_pfts = TaxaPftMatrix(pd.DataFrame.from_records(
@@ -181,8 +215,8 @@ def test_get_unmapped_taxas():
     taxa_pfts = TaxaPftMatrix(pd.DataFrame.from_records(
             columns=('taxa', 1),
             data=[
-                ('taxa1', 0),
-                ('taxa2', 0),
+                ('taxa1', 1),
+                ('taxa2', 1),
                 ]))
 
     biome_pfts = BiomePftMatrix(pd.DataFrame.from_records(

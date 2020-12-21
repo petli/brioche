@@ -9,13 +9,13 @@ class Biomization:
     def __init__(self, pft_taxas, pft_biomes):
         # Join the mappings on PFTs to get relationships between taxas and biomes
         self._taxa_biome_mapping = pft_biomes.mapping.merge(
-            pft_taxas.mapping, on='pft', how='outer', sort=False).assign(
-                taxa_in_biome=lambda row: row.taxa_in_pft * row.biome_has_pft)
+            pft_taxas.mapping, on='pft', how='outer', sort=False)
 
         # Turn the relationships back into a matrix indexed by taxa with one column per biome
         self._taxa_biome_matrix = self._taxa_biome_mapping.pivot_table(
-            index='taxa', columns='biome', values='taxa_in_biome',
-            aggfunc=lambda v: int(any(v)), fill_value=0)
+            index='taxa', columns='biome', values='pft',
+            aggfunc=lambda v: 1,
+            fill_value=0)
 
         # Count the mapped taxas per biome to calculate specificity adjustments below
         self._taxas_per_biome = self._taxa_biome_matrix.sum(axis='index')
