@@ -6,7 +6,7 @@
 import pandas as pd
 import pytest
 
-from brioche import BiomePftMapping, TaxaPftMapping, Biomization, PollenCounts, StabilizedPollenSamples
+from brioche import BiomePftMatrix, TaxaPftMatrix, Biomization, PollenCounts, StabilizedPollenSamples
 
 def test_join_mappings_into_biome_matrix():
     # taxa1: maps only through PFT 1 to biome 2
@@ -14,7 +14,7 @@ def test_join_mappings_into_biome_matrix():
     # taxa3: maps only to PFT 3, which doesn't map to any biome
     # taxa4: maps through PFT 2/4 to biome1 and PFT 1/4 to biome 2
 
-    taxa_pfts = TaxaPftMapping(pd.DataFrame.from_records(
+    taxa_pfts = TaxaPftMatrix(pd.DataFrame.from_records(
             columns=('taxa', 1, 2, 3, 4),
             data=[
                 ('taxa1', 1, 0, 1, 0),
@@ -23,7 +23,7 @@ def test_join_mappings_into_biome_matrix():
                 ('taxa4', 1, 1, 1, 1)
                 ]))
 
-    biome_pfts = BiomePftMapping(pd.DataFrame.from_records(
+    biome_pfts = BiomePftMatrix(pd.DataFrame.from_records(
             columns=('biome', 1, 2, 4),
             data=[
                 ('biome1', 0, 1, 1),
@@ -41,7 +41,7 @@ def test_join_mappings_into_biome_matrix():
 
 
 def test_get_biome_affinity():
-    taxa_pfts = TaxaPftMapping(pd.DataFrame.from_records(
+    taxa_pfts = TaxaPftMatrix(pd.DataFrame.from_records(
             columns=('taxa', 1, 2, 3),
             data=[
                 ('taxa1', 1, 1, 0),
@@ -51,7 +51,7 @@ def test_get_biome_affinity():
                 ]))
 
     # Use a 1-1 mapping between PFTs and biomes to simplify things
-    biome_pfts = BiomePftMapping(pd.DataFrame.from_records(
+    biome_pfts = BiomePftMatrix(pd.DataFrame.from_records(
             columns=('biome', 1, 2, 3),
             data=[
                 ('biome1', 1, 0, 0),
@@ -118,7 +118,7 @@ def test_get_biome_affinity():
     )
 
 def test_order_of_taxas_in_samples_does_not_matter():
-    taxa_pfts = TaxaPftMapping(pd.DataFrame.from_records(
+    taxa_pfts = TaxaPftMatrix(pd.DataFrame.from_records(
             columns=('taxa', 1),
             data=[
                 ('taxa1', 1),
@@ -126,7 +126,7 @@ def test_order_of_taxas_in_samples_does_not_matter():
                 ('taxa3', 0),
                 ]))
 
-    biome_pfts = BiomePftMapping(pd.DataFrame.from_records(
+    biome_pfts = BiomePftMatrix(pd.DataFrame.from_records(
             columns=('biome', 1),
             data=[
                 ('biome1', 1),
@@ -148,7 +148,7 @@ def test_order_of_taxas_in_samples_does_not_matter():
 
 
 def test_ignore_unmapped_taxas():
-    taxa_pfts = TaxaPftMapping(pd.DataFrame.from_records(
+    taxa_pfts = TaxaPftMatrix(pd.DataFrame.from_records(
             columns=('taxa', 1),
             data=[
                 ('taxa1', 1),
@@ -156,7 +156,7 @@ def test_ignore_unmapped_taxas():
                 ('taxa3', 0),
                 ]))
 
-    biome_pfts = BiomePftMapping(pd.DataFrame.from_records(
+    biome_pfts = BiomePftMatrix(pd.DataFrame.from_records(
             columns=('biome', 1),
             data=[
                 ('biome1', 1),
@@ -178,14 +178,14 @@ def test_ignore_unmapped_taxas():
 
 
 def test_get_unmapped_taxas():
-    taxa_pfts = TaxaPftMapping(pd.DataFrame.from_records(
+    taxa_pfts = TaxaPftMatrix(pd.DataFrame.from_records(
             columns=('taxa', 1),
             data=[
                 ('taxa1', 0),
                 ('taxa2', 0),
                 ]))
 
-    biome_pfts = BiomePftMapping(pd.DataFrame.from_records(
+    biome_pfts = BiomePftMatrix(pd.DataFrame.from_records(
             columns=('biome', 1),
             data=[
                 ('biome1', 1),

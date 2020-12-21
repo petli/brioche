@@ -1,28 +1,24 @@
 # Copyright 2020 Peter Liljenberg <peter.liljenberg@gmail.com>
 # Open source under the MIT license (see LICENSE)
 
-from .helpers import dataframe_from_gspread_sheet, safe_int
-
 class MappingBase:
-    def __init__(self, matrix):
-        input_key = str(matrix.columns[0])
+    def __init__(self, mapping):
+        if self.key_name not in mapping.columns:
+            raise ValueError('Mapping must have column {}'.format(self.key_name))
 
-        # We could be flexible here, but this provides a sanity check that we got the right matrix
-        if input_key.lower() != self.key_name:
-            raise ValueError('The first column in the {} matrix must be called "{}"'.format(self.__class__.__name__, self.key_name))
+        if 'pft' not in mapping.columns:
+            raise ValueError('Mapping must have column pft')
+        
+        if self.value_name not in mapping.columns:
+            raise ValueError('Mapping must have column {}'.format(self.value_name))
 
-        # Convert the matrix into a list of relations between biomes/taxas and PFTs
-        self.mapping = matrix.melt(id_vars=[input_key], var_name='pft', value_name=self.value_name)
+        if not mapping[self.value_name].isin([0, 1]).all():
+            raise ValueError('Mapping values must only contain values 0 or 1')
 
-        if not self.mapping[self.value_name].isin([0, 1]).all():
-            raise ValueError('Mapping matrix cells must only contain values 0 or 1')
+        self._mapping = mapping
 
-        # Rename the first column to the exact name, to get rid of any capitalization
-        self.mapping.rename(columns={ input_key: self.key_name }, inplace=True)
-
-    @classmethod
-    def from_gspread_sheet(cls, sheet):
-        return cls(dataframe_from_gspread_sheet(sheet, converter=safe_int, first_value_column=1))
+    @property
+    def mapping(self): return self._mapping
 
     @property
     def key_name(self): raise NotImplementedError()
@@ -45,4 +41,29 @@ class TaxaPftMapping(MappingBase):
 
     @property
     def value_name(self): return 'taxa_in_pft'
+
+
+class BiomePftMatrix(BiomePftMapping):
+    def __init__(self, matrix):
+        super().__init__(convert_matrix_to_mapping(matrix, self.key_name, self.value_name))
+
+
+class TaxaPftMatrix(TaxaPftMapping):
+    def __init__(self, matrix):
+        super().__init__(convert_matrix_to_mapping(matrix, self.key_name, self.value_name))
+
+def convert_matrix_to_mapping(matrix, key_name, value_name):
+    input_key = str(matrix.columns[0])
+
+    # We could be flexible here, but this provides a sanity check that we got the right matrix
+    if input_key.lower() != key_name:
+        raise ValueError('The first column in the matrix must be called "{}"'.format(key_name))
+
+    # Convert the matrix into a list of relations between biomes/taxas and PFTs
+    mapping = matrix.melt(id_vars=[input_key], var_name='pft', value_name=value_name)
+
+    # Rename the first column to the exact name, to get rid of any capitalization
+    mapping.rename(columns={ input_key: key_name }, inplace=True)
+
+    return mapping
 

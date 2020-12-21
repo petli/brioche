@@ -6,10 +6,10 @@
 import pytest
 import pandas as pd
 
-from brioche import BiomePftMapping, TaxaPftMapping
+from brioche import BiomePftMatrix, TaxaPftMatrix
 
-def test_create_pft_biome_mapping():
-    pft_biomes = BiomePftMapping(pd.DataFrame.from_records(
+def test_create_pft_biome_matrix():
+    pft_biomes = BiomePftMatrix(pd.DataFrame.from_records(
         columns=('Biome', 1, 2, 3),
         data=[
             ('Biome A', 0, 1, 0),
@@ -28,8 +28,8 @@ def test_create_pft_biome_mapping():
     ]
 
 
-def test_create_pft_taxa_mapping():
-    pft_taxas = TaxaPftMapping(pd.DataFrame.from_records(
+def test_create_pft_taxa_matrix():
+    pft_taxas = TaxaPftMatrix(pd.DataFrame.from_records(
         columns=('Taxa', 1, 2, 3),
         data=[
             ('Taxa A', 1, 0, 1),
@@ -48,7 +48,7 @@ def test_create_pft_taxa_mapping():
     ]
 
 
-@pytest.mark.parametrize('mapping_class', [BiomePftMapping, TaxaPftMapping])
+@pytest.mark.parametrize('mapping_class', [BiomePftMatrix, TaxaPftMatrix])
 def test_matrix_must_contain_key_column(mapping_class):
     data = pd.DataFrame.from_records(
         columns=('foo', 1, 2),
@@ -58,9 +58,9 @@ def test_matrix_must_contain_key_column(mapping_class):
         mapping_class(data)
 
 
-@pytest.mark.parametrize('mapping_class', [BiomePftMapping, TaxaPftMapping])
+@pytest.mark.parametrize('mapping_class', [BiomePftMatrix, TaxaPftMatrix])
 @pytest.mark.parametrize('value', [-1, 2, 0.5])
-def test_mapping_must_contain_only_1_and_0(mapping_class, value):
+def test_matrix_must_contain_only_1_and_0(mapping_class, value):
     data = pd.DataFrame.from_records(
         columns=(mapping_class.key_name, 1),
         data=[('foo', value)])
