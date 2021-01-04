@@ -50,7 +50,8 @@ class Biomization:
             # A biome with fewer mapped taxas has higher precedence than a more specific biome,
             # which we express as a fractional number below the number of decimals used in the
             # samples.
-            specificity = self._taxas_per_biome[biome] * 10 ** -(stabilized_samples.decimals + self._specificity_decimals)
+            decimals = stabilized_samples.decimals + self._specificity_decimals
+            specificity = self._taxas_per_biome[biome] * 10 ** -decimals
 
             # Calculate an affinity score for the biome by multiplying the stablized sample values
             # with the 1s and 0s from the mapping, i.e. filtering out taxas that aren't mapped
@@ -65,20 +66,19 @@ class Biomization:
             # Add the resulting series into the score data frame
             scores[biome] = biome_scores
 
-        print(scores)
-        print()
-
         # For each row find the column with the highest value, i.e. the biome with the highest affinity score
         biomes = scores.idxmax(axis='columns')
+        biomes.name = 'Biome'
 
-        return BiomeAffinity(biomes, scores, stabilized_samples.site)
+        return BiomeAffinity(biomes, scores, stabilized_samples.site, decimals)
 
 
 class BiomeAffinity:
-    def __init__(self, biomes, scores, site):
+    def __init__(self, biomes, scores, site, decimals):
         self._biomes = biomes
         self._scores = scores
         self._site = site
+        self._decimals = decimals
 
     @property
     def biomes(self): return self._biomes
@@ -88,3 +88,9 @@ class BiomeAffinity:
 
     @property
     def site(self): return self._site
+
+    def biomes_to_csv(self, path_or_buf, **kwargs):
+        self.biomes.to_csv(path_or_buf, **kwargs)
+
+    def scores_to_csv(self, path_or_buf, **kwargs):
+        self.scores.to_csv(path_or_buf, float_format='%.{}f'.format(self._decimals), **kwargs)

@@ -1,7 +1,13 @@
 # Copyright 2020 Peter Liljenberg <peter.liljenberg@gmail.com>
 # Open source under the MIT license (see LICENSE)
 
+# pylint: disable=import-error
+
+import pandas as pd
+
 class MappingBase:
+    key_name = None
+    
     def __init__(self, mapping):
         if self.key_name not in mapping.columns:
             raise ValueError('Mapping must have column {}'.format(self.key_name))
@@ -14,18 +20,12 @@ class MappingBase:
     @property
     def mapping(self): return self._mapping
 
-    @property
-    def key_name(self): raise NotImplementedError()
-
-
 class BiomePftMapping(MappingBase):
-    @property
-    def key_name(self): return 'biome'
+    key_name = 'biome'
 
 
 class TaxaPftMapping(MappingBase):
-    @property
-    def key_name(self): return 'taxa'
+    key_name = 'taxa'
 
 
 class BiomePftMatrix(BiomePftMapping):
@@ -38,14 +38,29 @@ class TaxaPftMatrix(TaxaPftMapping):
         super().__init__(convert_matrix_to_mapping(matrix, self.key_name))
 
 
-class BiomePftList(BiomePftMapping):
-    def __init__(self, list):
-        super().__init__(convert_list_to_mapping(list, self.key_name))
+class PftListBase:
+    @staticmethod
+    def _convert_list_to_mapping(list, key_name):
+        list = clean_column_name(list, 0, key_name)
+        list = clean_column_name(list, 1, 'pft')
+        return list.explode('pft')
+
+    @classmethod
+    def read_csv(cls, filepath_or_buffer, **kwargs):
+        key_name = cls.key_name # pylint: disable=no-member
+        raw = pd.read_csv(filepath_or_buffer, dtype=str, header=None, **kwargs)
+        df_list = raw.apply(lambda row: pd.Series([row.iloc[0], row.iloc[1:].dropna().to_list()], index=[key_name, 'pft']), axis='columns')
+        return cls(df_list)
 
 
-class TaxaPftList(TaxaPftMapping):
+class BiomePftList(BiomePftMapping, PftListBase):
     def __init__(self, list):
-        super().__init__(convert_list_to_mapping(list, self.key_name))
+        super().__init__(self._convert_list_to_mapping(list, self.key_name))
+
+
+class TaxaPftList(TaxaPftMapping, PftListBase):
+    def __init__(self, list):
+        super().__init__(self._convert_list_to_mapping(list, self.key_name))
 
 
 def clean_column_name(df, index, name):
@@ -69,7 +84,3 @@ def convert_matrix_to_mapping(matrix, key_name):
     return mapping[mapping.has_pft == 1].filter(items=[key_name, 'pft'])
 
 
-def convert_list_to_mapping(list, key_name):
-    list = clean_column_name(list, 0, key_name)
-    list = clean_column_name(list, 1, 'pft')
-    return list.explode('pft')

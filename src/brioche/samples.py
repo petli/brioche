@@ -4,11 +4,21 @@
 # pylint: disable=import-error
 
 import numpy as np
+import pandas as pd
 
 class PollenSamples:
     def __init__(self, samples, site=None):
         self._samples = samples
         self._site = site
+
+    @classmethod
+    def read_csv(cls, filepath_or_buffer, site=None, **kwargs):
+        return PollenSamples._read_csv(cls, filepath_or_buffer, site=site, **kwargs)
+    
+    @staticmethod
+    def _read_csv(constructor, filepath_or_buffer, site=None, **kwargs):
+        df = pd.read_csv(filepath_or_buffer, index_col=0, header=0, **kwargs)
+        return constructor(df, site=site)
 
     @property
     def samples(self): return self._samples
@@ -65,3 +75,7 @@ class StabilizedPollenSamples(PollenSamples):
     def get_stabilized(self, default_threshold=0.0, decimals=2):
         # TODO: round if decimals are fewer than this is set up to use
         return self
+
+    @classmethod
+    def read_csv(cls, filepath_or_buffer, decimals, site=None, **kwargs):
+        return PollenSamples._read_csv(lambda samples, site2: cls(samples, decimals, site=site2), filepath_or_buffer, site=site, **kwargs)

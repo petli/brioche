@@ -17,3 +17,6 @@ requires = [
     "gspread ~= 3.6",
     "numpy ~= 1.1",
 ]
+
+[tool.flit.scripts]
+brioche = "brioche.tool:main"
