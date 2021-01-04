@@ -3,6 +3,7 @@
 
 # pylint: disable=import-error
 
+import math
 import pandas as pd
 
 class Biomization:
@@ -19,6 +20,7 @@ class Biomization:
 
         # Count the mapped taxas per biome to calculate specificity adjustments below
         self._taxas_per_biome = self._taxa_biome_matrix.sum(axis='index')
+        self._specificity_decimals = int(math.log10(self._taxas_per_biome.max())) + 1
         self._unmapped_taxas = set()
 
     @property
@@ -48,7 +50,7 @@ class Biomization:
             # A biome with fewer mapped taxas has higher precedence than a more specific biome,
             # which we express as a fractional number below the number of decimals used in the
             # samples.
-            specificity = self._taxas_per_biome[biome] * 10 ** -(stabilized_samples.decimals + 1)
+            specificity = self._taxas_per_biome[biome] * 10 ** -(stabilized_samples.decimals + self._specificity_decimals)
 
             # Calculate an affinity score for the biome by multiplying the stablized sample values
             # with the 1s and 0s from the mapping, i.e. filtering out taxas that aren't mapped

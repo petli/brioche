@@ -241,3 +241,36 @@ def test_get_unmapped_taxas():
     result = biomization.get_unmapped_taxas(samples1, samples2)
 
     assert result == {'taxa3', 'taxa4', 'taxa5'}
+
+@pytest.mark.parametrize(('number_of_taxas', 'expected_score'), [
+    (1, 1.09),
+    (9, 1.01),
+    (10, 1.09),
+    (11, 1.089),
+    (99, 1.001),
+    (100, 1.09),
+    (191, 1.0809)
+    ])
+def test_tie_breaker_decrement_uses_enough_decimals_to_not_affect_affinity_score(number_of_taxas, expected_score):
+    taxa_pfts = TaxaPftMatrix(pd.DataFrame.from_records(
+            columns=('taxa', 1),
+            data=[('taxa{}'.format(i), 1) for i in range(number_of_taxas)]))
+
+    biome_pfts = BiomePftMatrix(pd.DataFrame.from_records(
+            columns=('biome', 1),
+            data=[
+                ('biome1', 1),
+                ]))
+
+    samples = StabilizedPollenSamples(
+        samples=pd.DataFrame.from_dict(
+            orient='index',
+            columns=('taxa0', ),
+            data=dict(row=[1.1])),
+        decimals=1)
+
+    biomization = Biomization(taxa_pfts, biome_pfts)
+    affinity = biomization.get_biome_affinity(samples)
+
+    result = affinity.scores.loc['row', 'biome1']
+    assert result == pytest.approx(expected_score)
