@@ -44,6 +44,9 @@ class PollenSamples:
 
         return StabilizedPollenSamples(stabilized, site=self.site, decimals=decimals)
 
+    def to_csv(self, path_or_buf, decimals=2, **kwargs):
+        self.samples.to_csv(path_or_buf, float_format='%.{}f'.format(decimals), **kwargs)
+
 
 class PollenCounts(PollenSamples):
     def get_percentages(self, decimals=None): 
@@ -78,4 +81,10 @@ class StabilizedPollenSamples(PollenSamples):
 
     @classmethod
     def read_csv(cls, filepath_or_buffer, decimals, site=None, **kwargs):
-        return PollenSamples._read_csv(lambda samples, site2: cls(samples, decimals, site=site2), filepath_or_buffer, site=site, **kwargs)
+        return PollenSamples._read_csv(lambda samples, site=None: cls(samples, decimals, site=site), filepath_or_buffer, site=site, **kwargs)
+
+    def to_csv(self, path_or_buf, decimals=None, **kwargs):
+        if decimals is None:
+            decimals = self.decimals
+
+        super().to_csv(path_or_buf, decimals=decimals, **kwargs)

@@ -19,12 +19,14 @@ parser.add_argument('--decimals', type=int, choices=range(5), default=2, help='D
 parser.add_argument('--default-threshold', '-d', type=float, default=0.5, help='Default percentage threshold')
 parser.add_argument('--type', choices=['counts', 'percentages', 'stabilized'], 
     default='counts', help='Type of values in the pollen sample files')
+parser.add_argument('--save-percentages', action='store_true', help='Save calculated sample percentages')
+parser.add_argument('--save-stabilized', action='store_true', help='Save calculated stabilized sample values')
 parser.add_argument('--taxas', '-t', required=True, help='Taxa to PFT mapping CSV file')
 parser.add_argument('--biomes', '-b', required=True, help='Biome to PFT mapping CSV file')
 parser.add_argument('samples', nargs='+', help='Pollen sample CSV files')
 
-def main():
-    args = parser.parse_args()
+def main(cli_args=None):
+    args = parser.parse_args(cli_args)
     taxas = TaxaPftList.read_csv(args.taxas)
     biomes = BiomePftList.read_csv(args.biomes)
     samples = list(read_samples(args))
@@ -39,29 +41,41 @@ def main():
         print()
 
     for sample in samples:
-        print('Reading samples:', sample.site)
+        print('Reading samples from:', sample.site)
 
-        biomes_path = '{}_biomes.csv'.format(sample.site)
-        scores_path = '{}_scores.csv'.format(sample.site)
+        base = os.path.splitext(sample.site)[0]
 
-        affinity = biomization.get_biome_affinity(sample.get_stabilized(default_threshold=args.default_threshold, decimals=args.decimals))
+        biomes_path = '{}_biomes.csv'.format(base)
+        scores_path = '{}_scores.csv'.format(base)
+
+        stabilized = sample.get_stabilized(default_threshold=args.default_threshold, decimals=args.decimals)
+
+        if args.save_percentages:
+            percentages_path = '{}_percentages.csv'.format(base)
+            sample.get_percentages(args.decimals).to_csv(percentages_path, decimals=args.decimals)
+            print('Wrote percentages to:', percentages_path)
+
+        if args.save_stabilized:
+            stabilized_path = '{}_stabilized.csv'.format(base)
+            stabilized.to_csv(stabilized_path)
+            print('Wrote stabilized to: ', stabilized_path)
+
+        affinity = biomization.get_biome_affinity(stabilized)
         affinity.biomes_to_csv(biomes_path, sep=args.separator)
         affinity.scores_to_csv(scores_path, sep=args.separator)
 
-        print('Wrote biomes to:', biomes_path)
-        print('Wrote scores to:', scores_path)
+        print('Wrote biomes to:     ', biomes_path)
+        print('Wrote scores to:     ', scores_path)
         print()
 
 
 def read_samples(args):
     for sample in args.samples:
-        base = os.path.splitext(sample)[0]
-
         if args.type == 'counts':
-            yield PollenCounts.read_csv(sample, site=base, sep=args.separator)
+            yield PollenCounts.read_csv(sample, site=sample, sep=args.separator)
 
         elif args.type == 'percentages':
-            yield PollenPercentages.read_csv(sample, site=base, sep=args.separator)
+            yield PollenPercentages.read_csv(sample, site=sample, sep=args.separator)
 
         elif args.type == 'stabilized':
-            yield StabilizedPollenSamples.read_csv(sample, decimals=args.decimals, site=base, sep=args.separator)
+            yield StabilizedPollenSamples.read_csv(sample, decimals=args.decimals, site=sample, sep=args.separator)
