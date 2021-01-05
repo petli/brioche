@@ -27,8 +27,8 @@ parser.add_argument('samples', nargs='+', help='Pollen sample CSV files')
 
 def main(cli_args=None):
     args = parser.parse_args(cli_args)
-    taxas = TaxaPftList.read_csv(args.taxas)
-    biomes = BiomePftList.read_csv(args.biomes)
+    taxas = TaxaPftList.read_csv(args.taxas, sep=args.separator)
+    biomes = BiomePftList.read_csv(args.biomes, sep=args.separator)
     samples = list(read_samples(args))
 
     biomization = Biomization(taxas, biomes)
@@ -52,12 +52,12 @@ def main(cli_args=None):
 
         if args.save_percentages:
             percentages_path = '{}_percentages.csv'.format(base)
-            sample.get_percentages(args.decimals).to_csv(percentages_path, decimals=args.decimals)
+            sample.get_percentages(args.decimals).to_csv(percentages_path, decimals=args.decimals, sep=args.separator)
             print('Wrote percentages to:', percentages_path)
 
         if args.save_stabilized:
             stabilized_path = '{}_stabilized.csv'.format(base)
-            stabilized.to_csv(stabilized_path)
+            stabilized.to_csv(stabilized_path, sep=args.separator)
             print('Wrote stabilized to: ', stabilized_path)
 
         affinity = biomization.get_biome_affinity(stabilized)
