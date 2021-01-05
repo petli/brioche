@@ -14,16 +14,16 @@ from .biomization import Biomization
 
 parser = argparse.ArgumentParser(description='Perform biome affinity analysis of pollen samples')
 parser.add_argument('--version', action='version', version='%(prog)s {}'.format(__version__))
-parser.add_argument('--separator', '-s', default=',', help='Column separator')
-parser.add_argument('--decimals', type=int, choices=range(5), default=2, help='Decimals to use in stabilized sample values')
-parser.add_argument('--default-threshold', '-d', type=float, default=0.5, help='Default percentage threshold')
+parser.add_argument('--separator', '-s', default=',', help='Column separator (default comma)', metavar='CHAR/REGEXP')
+parser.add_argument('--decimals', type=int, choices=range(5), default=2, help='Decimals to use in stabilized sample values (default 2)')
+parser.add_argument('--default-threshold', '-d', type=float, default=0.5, help='Default sample stabilization threshold (default 0.5)', metavar='THRESHOLD')
 parser.add_argument('--type', choices=['counts', 'percentages', 'stabilized'], 
-    default='counts', help='Type of values in the pollen sample files')
+    default='counts', help='Type of values in the pollen sample files (default counts)')
 parser.add_argument('--save-percentages', action='store_true', help='Save calculated sample percentages')
 parser.add_argument('--save-stabilized', action='store_true', help='Save calculated stabilized sample values')
-parser.add_argument('--taxas', '-t', required=True, help='Taxa to PFT mapping CSV file')
-parser.add_argument('--biomes', '-b', required=True, help='Biome to PFT mapping CSV file')
-parser.add_argument('samples', nargs='+', help='Pollen sample CSV files')
+parser.add_argument('--taxas', '-t', required=True, help='Taxa to PFT mapping CSV file', metavar='TAXAS.CSV')
+parser.add_argument('--biomes', '-b', required=True, help='Biome to PFT mapping CSV file', metavar='BIOMES.CSV')
+parser.add_argument('samples', nargs='+', help='Pollen sample CSV files', metavar='SAMPLE.CSV')
 
 def main(cli_args=None):
     args = parser.parse_args(cli_args)
