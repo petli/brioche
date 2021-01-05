@@ -53,17 +53,6 @@ def test_matrix_must_contain_key_column(mapping_class):
         mapping_class(data)
 
 
-@pytest.mark.parametrize('mapping_class', [BiomePftMatrix, TaxaPftMatrix])
-@pytest.mark.parametrize('value', [-1, 2, 0.5])
-def test_matrix_must_contain_only_1_and_0(mapping_class, value):
-    data = pd.DataFrame.from_records(
-        columns=(mapping_class.key_name, 1),
-        data=[('foo', value)])
-
-    with pytest.raises(ValueError):
-        mapping_class(data)
-
-
 def test_create_biome_pft_list():
     biome_pfts = BiomePftList(pd.DataFrame.from_records(
         columns=('Biome', 'PFT'),
