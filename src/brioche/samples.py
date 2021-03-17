@@ -51,7 +51,7 @@ class PollenSamples:
 class PollenCounts(PollenSamples):
     def get_percentages(self, decimals=None): 
         sums = self.samples.sum(axis=1)
-        percentages = self.samples.apply(lambda column: column * 100 / sums)
+        percentages = self.samples.apply(lambda column: column * 100 / sums).fillna(0.0)
 
         if decimals is not None:
             percentages = percentages.round(decimals)

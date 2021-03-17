@@ -70,6 +70,10 @@ class Biomization:
         biomes = scores.idxmax(axis='columns')
         biomes.name = 'Biome'
 
+        # Remove rows where there are no values
+        score_sums = scores.sum(axis=1)
+        biomes[score_sums == 0] = 'N/A'
+
         return BiomeAffinity(biomes, scores, stabilized_samples.site, decimals)
 
 

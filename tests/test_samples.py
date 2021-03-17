@@ -21,6 +21,7 @@ def test_calculate_percentages_from_counts():
         data=[
             (5, 0, 15),
             (1, 2, 7),
+            (0, 0, 0)
         ]),
         site="test")
 
@@ -30,6 +31,7 @@ def test_calculate_percentages_from_counts():
     assert result == [
         dict(TaxaA=25.0, TaxaB=0, TaxaC=75.0),
         dict(TaxaA=10.0, TaxaB=20.0, TaxaC=70.0),
+        dict(TaxaA=0.0, TaxaB=0.0, TaxaC=0.0),
     ]
 
     assert counts.site == percentages.site

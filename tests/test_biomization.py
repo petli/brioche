@@ -110,6 +110,9 @@ def test_get_biome_affinity():
                 all_taxas_maps_to_biome3_as_highest_affinity=[
                     1, 2, 3, 4
                 ],
+                no_samples_maps_to_na=[
+                    0, 0, 0, 0
+                ]
             )),
         decimals=0,
         site="test")
@@ -123,7 +126,8 @@ def test_get_biome_affinity():
         taxa1_only_maps_to_biome1_as_least_specific='biome1',
         taxa2_only_maps_to_biome2_as_least_specific='biome2',
         taxa1_and_2_maps_to_biome2_as_highest_affinity='biome2',
-        all_taxas_maps_to_biome3_as_highest_affinity='biome3'
+        all_taxas_maps_to_biome3_as_highest_affinity='biome3',
+        no_samples_maps_to_na='N/A'
     )
 
     score_results = affinity.scores.to_dict(orient='index')
@@ -148,6 +152,11 @@ def test_get_biome_affinity():
             biome1=pytest.approx(0.9),
             biome2=pytest.approx(2.8),
             biome3=pytest.approx(8.7)
+        ),
+        no_samples_maps_to_na=dict(
+            biome1=pytest.approx(0),
+            biome2=pytest.approx(0),
+            biome3=pytest.approx(0)
         )
     )
 
