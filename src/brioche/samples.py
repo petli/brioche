@@ -12,12 +12,12 @@ class PollenSamples:
         self._site = site
 
     @classmethod
-    def read_csv(cls, filepath_or_buffer, site=None, **kwargs):
-        return PollenSamples._read_csv(cls, filepath_or_buffer, site=site, **kwargs)
+    def read_csv(cls, filepath_or_buffer, site=None, index_col=0, **kwargs):
+        return PollenSamples._read_csv(cls, filepath_or_buffer, site=site, index_col=index_col, **kwargs)
     
     @staticmethod
-    def _read_csv(constructor, filepath_or_buffer, site=None, **kwargs):
-        df = pd.read_csv(filepath_or_buffer, index_col=0, header=0, **kwargs)
+    def _read_csv(constructor, filepath_or_buffer, site, index_col, **kwargs):
+        df = pd.read_csv(filepath_or_buffer, index_col=index_col, header=0, **kwargs)
         return constructor(df, site=site)
 
     @property
@@ -80,8 +80,8 @@ class StabilizedPollenSamples(PollenSamples):
         return self
 
     @classmethod
-    def read_csv(cls, filepath_or_buffer, decimals, site=None, **kwargs):
-        return PollenSamples._read_csv(lambda samples, site=None: cls(samples, decimals, site=site), filepath_or_buffer, site=site, **kwargs)
+    def read_csv(cls, filepath_or_buffer, decimals, site=None, index_col=0, **kwargs):
+        return PollenSamples._read_csv(lambda samples, site=None: cls(samples, decimals, site=site), filepath_or_buffer, site=site, index_col=index_col, **kwargs)
 
     def to_csv(self, path_or_buf, decimals=None, **kwargs):
         if decimals is None:

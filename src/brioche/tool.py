@@ -23,6 +23,7 @@ parser.add_argument('--save-percentages', action='store_true', help='Save calcul
 parser.add_argument('--save-stabilized', action='store_true', help='Save calculated stabilized sample values')
 parser.add_argument('--taxas', '-t', required=True, help='Taxa to PFT mapping CSV file', metavar='TAXAS.CSV')
 parser.add_argument('--biomes', '-b', required=True, help='Biome to PFT mapping CSV file', metavar='BIOMES.CSV')
+parser.add_argument('--index', type=int, action='append', help='Index column, counting from 0 (repeat option if there are multiple index columns). If omitted the first column is used')
 parser.add_argument('samples', nargs='+', help='Pollen sample CSV files', metavar='SAMPLE.CSV')
 
 def main(cli_args=None):
@@ -70,12 +71,14 @@ def main(cli_args=None):
 
 
 def read_samples(args):
+    index_col = args.index or [0]
+
     for sample in args.samples:
         if args.type == 'counts':
-            yield PollenCounts.read_csv(sample, site=sample, sep=args.separator)
+            yield PollenCounts.read_csv(sample, site=sample, index_col=index_col, sep=args.separator)
 
         elif args.type == 'percentages':
-            yield PollenPercentages.read_csv(sample, site=sample, sep=args.separator)
+            yield PollenPercentages.read_csv(sample, site=sample, index_col=index_col, sep=args.separator)
 
         elif args.type == 'stabilized':
-            yield StabilizedPollenSamples.read_csv(sample, decimals=args.decimals, site=sample, sep=args.separator)
+            yield StabilizedPollenSamples.read_csv(sample, decimals=args.decimals, site=sample, index_col=index_col, sep=args.separator)
