@@ -6,7 +6,7 @@
 import pytest
 import pandas as pd
 
-from brioche import PollenCounts, PollenPercentages
+from brioche import PollenCounts, PollenPercentages, StabilizedPollenSamples
 
 def test_get_taxas():
     counts = PollenCounts(pd.DataFrame.from_records(
@@ -104,3 +104,80 @@ def test_get_stabilized_using_default_threshold(percentage, threshold, decimals,
     result = stabilized.samples.iat[0, 0]
 
     assert result == pytest.approx(expected)
+
+
+class DummyWorksheet:
+    def __init__(self, title, *rows):
+        self.title = title
+        self._values = rows
+
+    def get_all_values(self, value_render_option): 
+        return self._values
+
+def test_read_counts_from_google_sheet():
+    counts = PollenCounts.read_google_sheet(DummyWorksheet('test',
+        ('Level', 'foo', 'bar'),
+        ('a', 14, ''),
+        ('b', '', 13.2)
+    ))
+
+    result = counts.samples.to_dict('index')
+
+    assert counts.site == 'test'
+    assert result == dict(
+        a=dict(foo=14, bar=0),
+        b=dict(foo=0, bar=13)
+    )
+
+def test_read_percentages_from_google_sheet():
+    percentages = PollenPercentages.read_google_sheet(DummyWorksheet('test',
+        ('Level', 'foo', 'bar'),
+        ('a', 14, ''),
+        ('b', '', 13.2)
+    ))
+
+    result = percentages.samples.to_dict('index')
+
+    assert percentages.site == 'test'
+    assert result == dict(
+        a=dict(foo=pytest.approx(14.0), bar=0),
+        b=dict(foo=0, bar=pytest.approx(13.2))
+    )
+
+def test_read_stabilized_from_google_sheet():
+    stabilized = StabilizedPollenSamples.read_google_sheet(DummyWorksheet('test',
+        ('Level', 'foo', 'bar'),
+        ('a', 14, ''),
+        ('b', '', 13.2)
+    ), decimals=4)
+
+    result = stabilized.samples.to_dict('index')
+
+    assert stabilized.site == 'test'
+    assert stabilized.decimals == 4
+    assert result == dict(
+        a=dict(foo=pytest.approx(14.0), bar=0),
+        b=dict(foo=0, bar=pytest.approx(13.2))
+    )
+
+def test_raise_exception_for_duplicate_columns_in_google_sheet():
+    with pytest.raises(ValueError, match=r'^Duplicate columns in test: .*foo'):
+        PollenCounts.read_google_sheet(DummyWorksheet('test',
+            ('Depth', 'foo', 'bar', 'foo'),
+            (10, 14, 0, 0),
+        ))
+
+def test_read_multi_index_counts_from_google_sheet():
+    counts = PollenCounts.read_google_sheet(DummyWorksheet('test',
+        ('Depth', 'foo', 'Age', 'bar'),
+        (100, 14, 158, ''),
+        (200, '', 354, 13.2)
+    ), index_col=[0, 2])
+
+    result = counts.samples.to_dict('index')
+
+    assert result == {
+        (100, 158): dict(foo=14, bar=0),
+        (200, 354): dict(foo=0, bar=13)
+    }
+
