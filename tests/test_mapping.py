@@ -3,6 +3,7 @@
 
 # pylint: disable=missing-function-docstring missing-module-docstring import-error
 
+import io
 import pytest
 import pandas as pd
 
@@ -87,3 +88,40 @@ def test_create_taxa_pft_list():
         dict(pft=3, taxa='Taxa A'),
         dict(pft=4, taxa='Taxa B'),
     ]
+
+
+def test_read_biome_pft_csv():
+    biome_pfts = BiomePftList.read_csv(io.StringIO(
+'''Biome A,1,
+Biome B,1,2
+'''))
+
+    result = sorted(biome_pfts.mapping.to_dict('records'), key=lambda d: (d['pft'], d['biome']))
+
+    assert result == [
+        dict(pft='1', biome='Biome A'),
+        dict(pft='1', biome='Biome B'),
+        dict(pft='2', biome='Biome B')
+    ]
+
+
+class DummyWorksheet:
+    def __init__(self, *rows):
+        self._values = rows
+
+    def get_all_values(self): 
+        return self._values
+
+def test_read_taxa_pft_google_sheet():
+    taxa_pfts = TaxaPftList.read_google_sheet(DummyWorksheet(
+        ['Taxa A', '1', ''],
+        ['Taxa B', '1', '2']))
+
+    result = sorted(taxa_pfts.mapping.to_dict('records'), key=lambda d: (d['pft'], d['taxa']))
+
+    assert result == [
+        dict(pft='1', taxa='Taxa A'),
+        dict(pft='1', taxa='Taxa B'),
+        dict(pft='2', taxa='Taxa B')
+    ]
+
