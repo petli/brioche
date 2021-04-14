@@ -109,19 +109,19 @@ class DummyWorksheet:
     def __init__(self, *rows):
         self._values = rows
 
-    def get_all_values(self): 
+    def get_all_values(self, value_render_option): 
         return self._values
 
 def test_read_taxa_pft_google_sheet():
     taxa_pfts = TaxaPftList.read_google_sheet(DummyWorksheet(
-        ['Taxa A', '1', ''],
-        ['Taxa B', '1', '2']))
+        ['Taxa A', 1, ''],
+        ['Taxa B', 1, 2]))
 
     result = sorted(taxa_pfts.mapping.to_dict('records'), key=lambda d: (d['pft'], d['taxa']))
 
     assert result == [
-        dict(pft='1', taxa='Taxa A'),
-        dict(pft='1', taxa='Taxa B'),
-        dict(pft='2', taxa='Taxa B')
+        dict(pft=1, taxa='Taxa A'),
+        dict(pft=1, taxa='Taxa B'),
+        dict(pft=2, taxa='Taxa B')
     ]
 
