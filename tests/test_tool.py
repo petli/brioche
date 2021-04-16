@@ -41,7 +41,7 @@ def test_pollen_counts_for_multiple_sites(tmp_path, sep):
 
     assert read_csv(tmp_path / 'site1_scores.csv') == expected_csv(sep,
         ('depth', 'biome1', 'biome2', 'biome3'),
-        (10, '1.18', '2.68', '9.48'))
+        (10, '1.2', '2.7', '9.5'))
 
     assert read_csv(tmp_path / 'site1_biomes.csv') == expected_csv(sep,
         ('depth', 'Biome'),
@@ -57,7 +57,7 @@ def test_pollen_counts_for_multiple_sites(tmp_path, sep):
 
     assert read_csv(tmp_path / 'site2_scores.csv') == expected_csv(sep,
         ('depth', 'biome1', 'biome2', 'biome3'),
-        (20, '12.58', '9.48', '9.48'))
+        (20, '12.6', '9.5', '9.5'))
 
     assert read_csv(tmp_path / 'site2_biomes.csv') == expected_csv(sep,
         ('depth', 'Biome'),
@@ -89,8 +89,8 @@ def test_pollen_percentages_with_high_default_threshold(tmp_path, sep):
 
     assert read_csv(tmp_path / 'site1_scores.csv') == expected_csv(sep,
         ('depth', 'biome1', 'biome2', 'biome3'),
-        (10, '0.0000', '0.0000', '8.9158'),
-        (20, '6.2848', '5.4308', '0.0000'))
+        (10, '0.000', '0.000', '8.916'),
+        (20, '6.285', '5.431', '0.000'))
 
     assert read_csv(tmp_path / 'site1_biomes.csv') == expected_csv(sep,
         ('depth', 'Biome'),
@@ -115,7 +115,7 @@ def test_stabilzed_pollen_samples(tmp_path, sep):
 
     assert read_csv(tmp_path / 'site1_scores.csv') == expected_csv(sep,
         ('depth', 'biome1', 'biome2', 'biome3'),
-        (10, '1.098', '4.428', '1.098'))
+        (10, '1.10', '4.43', '1.10'))
 
     assert read_csv(tmp_path / 'site1_biomes.csv') == expected_csv(sep,
         ('depth', 'Biome'),

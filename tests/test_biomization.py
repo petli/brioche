@@ -10,7 +10,8 @@ from brioche import \
     BiomePftMatrix, TaxaPftMatrix, \
     BiomePftList, TaxaPftList, \
     Biomization, PollenCounts, \
-    StabilizedPollenSamples
+    StabilizedPollenSamples, \
+    BiomeAffinity
 
 def test_join_matrix_mappings_into_biome_matrix():
     # taxa1: maps only through PFT 1 to biome 2
@@ -134,24 +135,24 @@ def test_get_biome_affinity():
 
     assert score_results == dict(
         taxa1_only_maps_to_biome1_as_least_specific=dict(
-            biome1=pytest.approx(4.9),
-            biome2=pytest.approx(4.8),
+            biome1=pytest.approx(5),
+            biome2=pytest.approx(5),
             biome3=pytest.approx(0)
         ),
         taxa2_only_maps_to_biome2_as_least_specific=dict(
             biome1=pytest.approx(0),
-            biome2=pytest.approx(9.8),
-            biome3=pytest.approx(9.7)
+            biome2=pytest.approx(10),
+            biome3=pytest.approx(10)
         ),
         taxa1_and_2_maps_to_biome2_as_highest_affinity=dict(
-            biome1=pytest.approx(4.9),
-            biome2=pytest.approx(14.8),
-            biome3=pytest.approx(9.7)
+            biome1=pytest.approx(5),
+            biome2=pytest.approx(15),
+            biome3=pytest.approx(10)
         ),
         all_taxas_maps_to_biome3_as_highest_affinity=dict(
-            biome1=pytest.approx(0.9),
-            biome2=pytest.approx(2.8),
-            biome3=pytest.approx(8.7)
+            biome1=pytest.approx(1),
+            biome2=pytest.approx(3),
+            biome3=pytest.approx(9)
         ),
         no_samples_maps_to_na=dict(
             biome1=pytest.approx(0),
@@ -187,7 +188,7 @@ def test_order_of_taxas_in_samples_does_not_matter():
     affinity = biomization.get_biome_affinity(samples)
 
     result = affinity.scores.loc['row', 'biome1']
-    assert result == pytest.approx(2.8)
+    assert result == pytest.approx(3)
 
 
 def test_ignore_unmapped_taxas():
@@ -217,7 +218,7 @@ def test_ignore_unmapped_taxas():
     affinity = biomization.get_biome_affinity(samples)
 
     result = affinity.scores.loc['row', 'biome1']
-    assert result == pytest.approx(5.8)
+    assert result == pytest.approx(6)
 
 
 def test_get_unmapped_taxas():
@@ -252,13 +253,13 @@ def test_get_unmapped_taxas():
     assert result == {'taxa3', 'taxa4', 'taxa5'}
 
 @pytest.mark.parametrize(('number_of_taxas', 'expected_score'), [
-    (1, 1.09),
-    (9, 1.01),
-    (10, 1.09),
-    (11, 1.089),
-    (99, 1.001),
-    (100, 1.09),
-    (191, 1.0809)
+    (1, 0.01),
+    (9, 0.09),
+    (10, 0.010),
+    (11, 0.011),
+    (99, 0.099),
+    (100, 0.0100),
+    (191, 0.0191)
     ])
 def test_tie_breaker_decrement_uses_enough_decimals_to_not_affect_affinity_score(number_of_taxas, expected_score):
     taxa_pfts = TaxaPftMatrix(pd.DataFrame.from_records(
@@ -281,5 +282,39 @@ def test_tie_breaker_decrement_uses_enough_decimals_to_not_affect_affinity_score
     biomization = Biomization(taxa_pfts, biome_pfts)
     affinity = biomization.get_biome_affinity(samples)
 
-    result = affinity.scores.loc['row', 'biome1']
+    result = affinity._specificity_scores['biome1']
     assert result == pytest.approx(expected_score)
+
+
+def test_apply_function_to_affinity_scores():
+    affinity = BiomeAffinity(
+        affinity_scores=pd.DataFrame.from_records(
+            columns=('BiomeA', 'BiomeB'),
+            data=[
+                (5.0, 4.5),
+                (5.0, 4.0),
+            ]),
+        specificity_scores=pd.Series(
+            [0.02, 0.01],
+            ['BiomeA', 'BiomeB']),
+        decimals=1,
+        site='test')
+
+    assert list(affinity.biomes.values) == ['BiomeA', 'BiomeA']
+
+    new_affinity = affinity.apply(lambda scores: scores.add(pd.Series(
+            [0.04, 0.99],
+            ['BiomeA', 'BiomeB'])))
+    assert type(new_affinity) == BiomeAffinity
+
+    result = new_affinity.scores.to_dict('records')
+    assert result == [
+        dict(BiomeA=pytest.approx(5.0), BiomeB=pytest.approx(5.5)),
+        dict(BiomeA=pytest.approx(5.0), BiomeB=pytest.approx(5.0))
+    ]
+
+    assert list(new_affinity.biomes.values) == ['BiomeB', 'BiomeB']
+
+    assert new_affinity.site == affinity.site
+    assert new_affinity._decimals == affinity._decimals
+    assert new_affinity._specificity_scores is affinity._specificity_scores
