@@ -181,3 +181,68 @@ def test_read_multi_index_counts_from_google_sheet():
         (200, 354): dict(foo=0, bar=13)
     }
 
+
+def test_apply_function_to_counts():
+    counts = PollenCounts(pd.DataFrame.from_records(
+        columns=('TaxaA', 'TaxaB'),
+        data=[
+            (5, 15),
+            (1, 0),
+            (3, 7),
+        ]),
+        site="test")
+
+    new_counts = counts.apply(lambda samples: samples[samples['TaxaB'] != 0])
+    assert type(new_counts) == PollenCounts
+
+    result = new_counts.samples.to_dict('records')
+    assert result == [
+        dict(TaxaA=5, TaxaB=15),
+        dict(TaxaA=3, TaxaB=7),
+    ]
+
+    assert new_counts.site == counts.site
+
+def test_apply_function_to_percentages():
+    percentages = PollenPercentages(pd.DataFrame.from_records(
+        columns=('TaxaA', 'TaxaB'),
+        data=[
+            (5, 15),
+            (1, 0),
+            (3, 7),
+        ]),
+        site="test")
+
+    new_percentages = percentages.apply(lambda samples: samples[samples['TaxaB'] != 0])
+    assert type(new_percentages) == PollenPercentages
+
+    result = new_percentages.samples.to_dict('records')
+    assert result == [
+        dict(TaxaA=5, TaxaB=15),
+        dict(TaxaA=3, TaxaB=7),
+    ]
+
+    assert new_percentages.site == percentages.site
+
+def test_apply_function_to_stabilized_samples():
+    stab = StabilizedPollenSamples(pd.DataFrame.from_records(
+        columns=('TaxaA', 'TaxaB'),
+        data=[
+            (5, 15),
+            (1, 0),
+            (3, 7),
+        ]),
+        decimals=1,
+        site="test")
+
+    new_stab = stab.apply(lambda samples: samples[samples['TaxaB'] != 0])
+    assert type(new_stab) == StabilizedPollenSamples
+
+    result = new_stab.samples.to_dict('records')
+    assert result == [
+        dict(TaxaA=5, TaxaB=15),
+        dict(TaxaA=3, TaxaB=7),
+    ]
+
+    assert new_stab.site == stab.site
+    assert new_stab.decimals == stab.decimals

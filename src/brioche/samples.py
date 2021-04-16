@@ -57,6 +57,9 @@ class PollenSamples:
     @property
     def site(self): return self._site
 
+    def apply(self, sample_func):
+        raise NotImplementedError()
+
     def get_percentages(self, decimals=None): 
         raise NotImplementedError()
 
@@ -79,6 +82,9 @@ class PollenSamples:
 class PollenCounts(PollenSamples):
     sample_type = int
 
+    def apply(self, sample_func):
+        return PollenCounts(sample_func(self._samples), self._site)
+
     def get_percentages(self, decimals=None): 
         sums = self.samples.sum(axis=1)
         percentages = self.samples.apply(lambda column: column * 100 / sums).fillna(0.0)
@@ -91,6 +97,9 @@ class PollenCounts(PollenSamples):
 
 class PollenPercentages(PollenSamples):
     sample_type = float
+
+    def apply(self, sample_func):
+        return PollenPercentages(sample_func(self._samples), self._site)
 
     def get_percentages(self, decimals=None):
         if decimals is None:
@@ -108,6 +117,9 @@ class StabilizedPollenSamples(PollenSamples):
 
     @property
     def decimals(self): return self._decimals
+
+    def apply(self, sample_func):
+        return StabilizedPollenSamples(sample_func(self._samples).round(self._decimals), self._decimals, self._site)
 
     def get_stabilized(self, default_threshold=0.0, decimals=2):
         # TODO: round if decimals are fewer than this is set up to use
