@@ -9,13 +9,13 @@ author-email = "peter.liljenberg@gmail.com"
 home-page = "https://github.com/petli/brioche"
 classifiers = ["License :: OSI Approved :: MIT License"]
 description-file = "README.md"
-requires-python = "~=3.6"
+requires-python = "~=3.8"
 keywords = "biome, biomization, plant function type, pollen"
 
 requires = [
-    "pandas ~= 1.1",
-    "gspread ~= 3.6",
-    "numpy ~= 1.1",
+    "pandas ~= 2.2",
+    "gspread ~= 6.1",
+    "numpy ~= 2.1",
 ]
 
 [tool.flit.scripts]

@@ -4,7 +4,7 @@
 """Python/Pandas library to do biomization analyses of pollen samples
 """
 
-__version__ = "0.4.0"
+__version__ = "0.5.0"
 
 from .helpers import safe_int, dataframe_from_gspread_sheet
 
