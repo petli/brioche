@@ -9,7 +9,7 @@ author-email = "peter.liljenberg@gmail.com"
 home-page = "https://github.com/petli/brioche"
 classifiers = ["License :: OSI Approved :: MIT License"]
 description-file = "README.md"
-requires-python = "~=3.8"
+requires-python = ">=3.10,<4"
 keywords = "biome, biomization, plant function type, pollen"
 
 requires = [
