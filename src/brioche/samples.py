@@ -29,7 +29,7 @@ class PollenSamples:
 
     @staticmethod
     def _read_google_sheet(constructor, sample_type, worksheet, index_col):
-        rows = worksheet.get_all_values('UNFORMATTED_VALUE')
+        rows = worksheet.get_all_values(value_render_option='UNFORMATTED_VALUE')
         columns = [c.strip() for c in rows[0]]
 
         duplicates = [col for col, cnt in Counter(columns).items() if cnt > 1]

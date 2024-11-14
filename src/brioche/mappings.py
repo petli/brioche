@@ -55,7 +55,7 @@ class PftListBase:
     @classmethod
     def read_google_sheet(cls, worksheet):
         key_name = cls.key_name # pylint: disable=no-member
-        rows = [(row[0], list(filter(None, row[1:]))) for row in worksheet.get_all_values('UNFORMATTED_VALUE')]
+        rows = [(row[0], list(filter(None, row[1:]))) for row in worksheet.get_all_values(value_render_option='UNFORMATTED_VALUE')]
         return cls(pd.DataFrame.from_records(rows, columns=(key_name, 'pft')))
 
 
