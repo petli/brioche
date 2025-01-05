@@ -11,9 +11,31 @@ Brioche is best used in a Jupyter notebook, but the library also includes a comm
 
 # Method
 
-To use Brioche you need to define a set of plant functional types (PFTs). As defined by Prentice et al., PFTs are "broad classes of plant defined by stature (e.g. tree/shrub), leaf form (e.g. broad-leaved/needle-leaved), phenology (e.g. evergreen/deciduous), and climatic adaptations". In brioche each PFT is identified by a number:
+To use Brioche you need to define a set of plant functional types (PFTs). As defined by Prentice et al., PFTs are "broad classes of plant defined by stature (e.g. tree/shrub), leaf form (e.g. broad-leaved/needle-leaved), phenology (e.g. evergreen/deciduous), and climatic adaptations". In brioche each PFT is identified by a number. These are the PFTs defined for the analysis in Githumbi et al. (submitted):
 
-TODO: example table.
+| PFT |	Description |
+|-----|-------------|
+| 1 |	Wet temperate evergreen tree (<15c, >1200mmyr-1)
+| 2	| Dry temperate evergreen tree (<15c, <1200mmyr-1)
+| 3	| Wet tropical evergreen tree(>15c, >1200mmyr-1)
+| 4	| Dry tropical evergreen tree(>15c, <1200mmyr-1)
+| 5	| Wet tropical raingreen tree (>1200mmyr-1)
+| 6	| Dry tropical raingreen tree
+| 7	| Tropical woody shrub
+| 8	| Temperate woody shrub
+| 9	| Frost tolerant woody shrub/tree
+| 10 | Tropical herb/forb
+| 11 | Temperate herb/forb
+| 12 | Frost tolerant herb/forb
+| 13 | Temperate sclerophyllous
+| 14 | Grass
+| 15 | Wetland taxa (sedges/herbs)
+| 16 | Fire tolerant temperate tree/shrub
+| 17 | Fire tolerant tropical tree/shrub
+| 18 | Succulent woody shrub/tree
+| 19 | Liana
+| 20 | Fern
+| 21 | Palm
 
 Next you need to define a **biome x PFT matrix** that maps your set of biomes to the PFTs that are dominant in each one.  Working with a full matrix can be unwieldy, so brioche supports reading a simple table with one row for each biome, followed by a list of the PFTs that map to it:
 
