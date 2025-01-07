@@ -5,12 +5,13 @@
 
 import numpy as np
 import pandas as pd
+import gspread
 from collections import Counter
 
 class PollenSamples:
     sample_type = None
 
-    def __init__(self, samples, site=None):
+    def __init__(self, samples: pd.DataFrame, site: str=None):
         self._samples = samples
         self._site = site
 
@@ -24,7 +25,7 @@ class PollenSamples:
         return constructor(df, site=site)
 
     @classmethod
-    def read_google_sheet(cls, worksheet, index_col=0):
+    def read_google_sheet(cls, worksheet: gspread.worksheet.Worksheet, index_col=0):
         return PollenSamples._read_google_sheet(cls, cls.sample_type, worksheet, index_col)
 
     @staticmethod
@@ -60,10 +61,10 @@ class PollenSamples:
     def apply(self, sample_func):
         raise NotImplementedError()
 
-    def get_percentages(self, decimals=None): 
+    def get_percentages(self, decimals: int=None): 
         raise NotImplementedError()
 
-    def get_stabilized(self, default_threshold=0.0, decimals=2):
+    def get_stabilized(self, default_threshold: float=0.0, decimals: int=2):
         percentages = self.get_percentages()
 
         # TODO: support per-taxa thresholds
@@ -130,7 +131,7 @@ class StabilizedPollenSamples(PollenSamples):
         return PollenSamples._read_csv(lambda samples, site=None: cls(samples, decimals, site=site), filepath_or_buffer, site=site, index_col=index_col, **kwargs)
 
     @classmethod
-    def read_google_sheet(cls, worksheet, decimals, index_col=0):
+    def read_google_sheet(cls, worksheet: gspread.worksheet.Worksheet, decimals: int, index_col=0):
         return PollenSamples._read_google_sheet(lambda samples, site=None: cls(samples, decimals, site=site), cls.sample_type, worksheet, index_col)
 
     def to_csv(self, path_or_buf, decimals=None, **kwargs):

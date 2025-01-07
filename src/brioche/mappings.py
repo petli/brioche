@@ -4,11 +4,13 @@
 # pylint: disable=import-error
 
 import pandas as pd
+import gspread
+import openpyxl
 
 class MappingBase:
-    key_name = None
+    key_name: str = None
     
-    def __init__(self, mapping):
+    def __init__(self, mapping: pd.DataFrame):
         if self.key_name not in mapping.columns:
             raise ValueError('Mapping must have column {}'.format(self.key_name))
 
@@ -40,7 +42,7 @@ class TaxaPftMatrix(TaxaPftMapping):
 
 class PftListBase:
     @staticmethod
-    def _convert_list_to_mapping(df, key_name):
+    def _convert_list_to_mapping(df: pd.DataFrame, key_name:str) -> pd.DataFrame:
         df = clean_column_name(df, 0, key_name)
         df = clean_column_name(df, 1, 'pft')
         return df.explode('pft')
@@ -53,23 +55,28 @@ class PftListBase:
         return cls(df_list)
 
     @classmethod
-    def read_google_sheet(cls, worksheet):
+    def read_google_sheet(cls, worksheet: gspread.worksheet.Worksheet):
         key_name = cls.key_name # pylint: disable=no-member
         rows = [(row[0], list(filter(None, row[1:]))) for row in worksheet.get_all_values(value_render_option='UNFORMATTED_VALUE')]
         return cls(pd.DataFrame.from_records(rows, columns=(key_name, 'pft')))
 
+    @classmethod
+    def read_excel_sheet(cls, worksheet: openpyxl.worksheet.worksheet.Worksheet):
+        key_name = cls.key_name # pylint: disable=no-member
+        rows = [(row[0], [int(pft) for pft in list(filter(None, row[1:]))]) for row in worksheet.values]
+        return cls(pd.DataFrame.from_records(rows, columns=(key_name, 'pft')))
 
 class BiomePftList(BiomePftMapping, PftListBase):
-    def __init__(self, df):
+    def __init__(self, df: pd.DataFrame):
         super().__init__(self._convert_list_to_mapping(df, self.key_name))
 
 
 class TaxaPftList(TaxaPftMapping, PftListBase):
-    def __init__(self, df):
+    def __init__(self, df: pd.DataFrame):
         super().__init__(self._convert_list_to_mapping(df, self.key_name))
 
 
-def clean_column_name(df, index, name):
+def clean_column_name(df: pd.DataFrame, index: str, name: str):
     """Check that the column has the expected name (case insensitive)
     as a sanity check that the user provided the right data, 
     and return a new dataframe with the column renamed to the preferred casing.
@@ -82,7 +89,7 @@ def clean_column_name(df, index, name):
     return df.rename(columns={ df_name: name })
 
 
-def convert_matrix_to_mapping(matrix, key_name):
+def convert_matrix_to_mapping(matrix: pd.DataFrame, key_name: str):
     matrix = clean_column_name(matrix, 0, key_name)
 
     # Convert the matrix into a list of relations between biomes/taxas and PFTs

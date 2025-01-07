@@ -16,6 +16,7 @@ requires = [
     "pandas ~= 2.2",
     "gspread ~= 6.1",
     "numpy ~= 2.1",
+    "openpyxl ~= 3.1"
 ]
 
 [tool.flit.scripts]
