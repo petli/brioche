@@ -8,11 +8,21 @@ from __future__ import annotations
 import math
 import pandas as pd
 
-from .mappings import BiomePftList, TaxaPftList
-from .samples import StabilizedPollenSamples
+from .mappings import BiomePftMapping, TaxaPftMapping
+from .samples import PollenSamples, StabilizedPollenSamples
 
 class Biomization:
-    def __init__(self, pft_taxas: TaxaPftList, pft_biomes: BiomePftList):
+    """Class that performs the biomization analysis.
+    """
+
+    def __init__(self, pft_taxas: TaxaPftMapping, pft_biomes: BiomePftMapping):
+        """
+        Initializes the Biomization class with the provided taxa and biome to PFT mappings.
+
+        Parameters:
+            pft_taxas (TaxaPftMapping): The mapping of taxa to PFTs.
+            pft_biomes (BiomePftMapping): The mapping of PFTs to biomes.
+        """
         # Join the mappings on PFTs to get relationships between taxas and biomes
         self._taxa_biome_mapping = pft_biomes.mapping.merge(
             pft_taxas.mapping, on='pft', how='outer', sort=False)
@@ -33,7 +43,16 @@ class Biomization:
     @property
     def taxa_biome_matrix(self) -> pd.DataFrame: return self._taxa_biome_matrix
 
-    def get_unmapped_taxas(self, *sites) -> set[str]:
+    def get_unmapped_taxas(self, *sites: list[PollenSamples]) -> set[str]:
+        """
+        Identify and return a set of taxa that are present in the given sites but not mapped to any biome.
+
+        Args:
+            *sites: Variable length argument list of PollenSamples.
+
+        Returns:
+            set[str]: A set of taxa names (strings) that are unmapped.
+        """
         return {
             taxa
             for site in sites
@@ -42,6 +61,16 @@ class Biomization:
         }
 
     def get_biome_affinity(self, stabilized_samples: StabilizedPollenSamples) -> BiomeAffinity:
+        """
+        Calculate the biome affinity scores for stabilized pollen samples.
+
+        Parameters:
+            stabilized_samples (StabilizedPollenSamples): The stabilized pollen samples 
+                for which to calculate the biome affinity scores.
+
+        Returns:
+            BiomeAffinity: Result object containing the affinity scores and biome matches.
+        """
         samples = stabilized_samples.samples
 
         # Build up a data frame for the affinity scores by starting
@@ -68,6 +97,9 @@ class Biomization:
         return BiomeAffinity(affinity_scores, specificity_scores, stabilized_samples.site, stabilized_samples.decimals)
 
 class BiomeAffinity:
+    """Result of the biomization analysis.
+    """
+    
     def __init__(self, affinity_scores: pd.DataFrame, specificity_scores: pd.Series, site: str, decimals: int):
         self._affinity_scores = affinity_scores
         self._specificity_scores = specificity_scores
@@ -87,15 +119,37 @@ class BiomeAffinity:
         self._biomes[score_sums == 0] = 'N/A'
 
     @property
-    def biomes(self) -> pd.Series: return self._biomes
+    def biomes(self) -> pd.Series: 
+        """
+        Returns the biome with the highest affinity score for each sample.
+        """
+        return self._biomes
 
     @property
-    def scores(self) -> pd.DataFrame: return self._affinity_scores
+    def scores(self) -> pd.DataFrame: 
+        """
+        Returns the affinity scores for each biome for each sample.
+        """
+        return self._affinity_scores
 
     @property
-    def site(self) -> str: return self._site
+    def site(self) -> str: 
+        """
+        Returns the name of the sample site, if known.
+        """
+        return self._site
 
     def apply(self, score_func) -> BiomeAffinity:
+        """
+        Apply a scoring function to the affinity scores and return a new BiomeAffinity object.
+
+        Parameters:
+            score_func (callable): A function that takes the current affinity scores dataframe as input 
+                                   and returns a dataframe with the new scores.
+
+        Returns:
+            BiomeAffinity: A new BiomeAffinity object with the updated scores.
+        """
         new_scores = score_func(self._affinity_scores).round(self._decimals)
         return BiomeAffinity(new_scores, self._specificity_scores, self._site, self._decimals)
 
