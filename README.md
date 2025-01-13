@@ -60,6 +60,14 @@ Brioche combines the two mappings to create a **taxon x biome matrix** (again, P
 
 The matrixes are represented as unpivoted lists in Brioche using the classes `BiomePftList` and `TaxaPftList`. They are best constructed with the class methods `read_csv()`, `read_excel_sheet()` and `read_google_sheet()`.
 
+Alternatively, if you prefer to work with a matrix where you map taxa and biomes to PFTs by entering 1 and 0 in each cell you can use the classes `BiomePftMatrix` and `TaxaPftMatrix`.  Parts of the biome x PFT mapping above would then look like this:
+
+| Biome                 | 12 | 13 | 14 | 15 |
+|-----------------------|----|----|----|----|
+| Grassland/afroalpine  |  1 |  0 |  0 |  0 |
+| Ericaceous scrub      |  1 |  0 |  1 |  0 |
+| Moorland              |  0 |  1 |  1 |  1 |
+
 
 # Reading pollen samples
 
