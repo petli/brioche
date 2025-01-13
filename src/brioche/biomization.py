@@ -3,11 +3,16 @@
 
 # pylint: disable=import-error
 
+from __future__ import annotations
+
 import math
 import pandas as pd
 
+from .mappings import BiomePftList, TaxaPftList
+from .samples import StabilizedPollenSamples
+
 class Biomization:
-    def __init__(self, pft_taxas, pft_biomes):
+    def __init__(self, pft_taxas: TaxaPftList, pft_biomes: BiomePftList):
         # Join the mappings on PFTs to get relationships between taxas and biomes
         self._taxa_biome_mapping = pft_biomes.mapping.merge(
             pft_taxas.mapping, on='pft', how='outer', sort=False)
@@ -23,12 +28,12 @@ class Biomization:
         self._specificity_decimals = int(math.log10(self._taxas_per_biome.max())) + 1
 
     @property
-    def taxa_biome_mapping(self): return self._taxa_biome_mapping
+    def taxa_biome_mapping(self) -> pd.DataFrame: return self._taxa_biome_mapping
 
     @property
-    def taxa_biome_matrix(self): return self._taxa_biome_matrix
+    def taxa_biome_matrix(self) -> pd.DataFrame: return self._taxa_biome_matrix
 
-    def get_unmapped_taxas(self, *sites):
+    def get_unmapped_taxas(self, *sites) -> set[str]:
         return {
             taxa
             for site in sites
@@ -36,7 +41,7 @@ class Biomization:
             if taxa not in self._taxa_biome_matrix.index
         }
 
-    def get_biome_affinity(self, stabilized_samples):
+    def get_biome_affinity(self, stabilized_samples: StabilizedPollenSamples) -> BiomeAffinity:
         samples = stabilized_samples.samples
 
         # Build up a data frame for the affinity scores by starting
@@ -45,7 +50,7 @@ class Biomization:
         # affinity score for each biome.
         affinity_scores = pd.DataFrame(index=samples.index)
 
-        # Calculate an affinity score for the biome by multiplying the stablized sample values
+        # Calculate an affinity score for the biome by multiplying the stabilized sample values
         # with the 1s and 0s from the mapping, i.e. filtering out taxas that aren't mapped
         # and summing the remaining ones.  
         for biome in self._taxa_biome_matrix:
@@ -63,7 +68,7 @@ class Biomization:
         return BiomeAffinity(affinity_scores, specificity_scores, stabilized_samples.site, stabilized_samples.decimals)
 
 class BiomeAffinity:
-    def __init__(self, affinity_scores, specificity_scores, site, decimals):
+    def __init__(self, affinity_scores: pd.DataFrame, specificity_scores: pd.Series, site: str, decimals: int):
         self._affinity_scores = affinity_scores
         self._specificity_scores = specificity_scores
         self._site = site
@@ -82,15 +87,15 @@ class BiomeAffinity:
         self._biomes[score_sums == 0] = 'N/A'
 
     @property
-    def biomes(self): return self._biomes
+    def biomes(self) -> pd.Series: return self._biomes
 
     @property
-    def scores(self): return self._affinity_scores
+    def scores(self) -> pd.DataFrame: return self._affinity_scores
 
     @property
-    def site(self): return self._site
+    def site(self) -> str: return self._site
 
-    def apply(self, score_func):
+    def apply(self, score_func) -> BiomeAffinity:
         new_scores = score_func(self._affinity_scores).round(self._decimals)
         return BiomeAffinity(new_scores, self._specificity_scores, self._site, self._decimals)
 

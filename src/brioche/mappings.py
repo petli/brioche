@@ -3,6 +3,8 @@
 
 # pylint: disable=import-error
 
+from __future__ import annotations
+
 import pandas as pd
 import gspread
 import openpyxl
@@ -48,20 +50,20 @@ class PftListBase:
         return df.explode('pft')
 
     @classmethod
-    def read_csv(cls, filepath_or_buffer, **kwargs):
+    def read_csv(cls, filepath_or_buffer, **kwargs) -> PftListBase:
         key_name = cls.key_name # pylint: disable=no-member
         raw = pd.read_csv(filepath_or_buffer, dtype=str, header=None, **kwargs)
         df_list = raw.apply(lambda row: pd.Series([row.iloc[0], row.iloc[1:].dropna().to_list()], index=[key_name, 'pft']), axis='columns')
         return cls(df_list)
 
     @classmethod
-    def read_google_sheet(cls, worksheet: gspread.worksheet.Worksheet):
+    def read_google_sheet(cls, worksheet: gspread.worksheet.Worksheet) -> PftListBase:
         key_name = cls.key_name # pylint: disable=no-member
         rows = [(row[0], list(filter(None, row[1:]))) for row in worksheet.get_all_values(value_render_option='UNFORMATTED_VALUE')]
         return cls(pd.DataFrame.from_records(rows, columns=(key_name, 'pft')))
 
     @classmethod
-    def read_excel_sheet(cls, worksheet: openpyxl.worksheet.worksheet.Worksheet):
+    def read_excel_sheet(cls, worksheet: openpyxl.worksheet.worksheet.Worksheet) -> PftListBase:
         key_name = cls.key_name # pylint: disable=no-member
         rows = [(row[0], [int(pft) for pft in list(filter(None, row[1:]))]) for row in worksheet.values]
         return cls(pd.DataFrame.from_records(rows, columns=(key_name, 'pft')))

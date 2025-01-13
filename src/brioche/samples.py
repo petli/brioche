@@ -3,6 +3,8 @@
 
 # pylint: disable=import-error
 
+from __future__ import annotations
+
 import numpy as np
 import pandas as pd
 import gspread
@@ -16,7 +18,7 @@ class PollenSamples:
         self._site = site
 
     @classmethod
-    def read_csv(cls, filepath_or_buffer, site=None, index_col=0, **kwargs):
+    def read_csv(cls, filepath_or_buffer, site=None, index_col=0, **kwargs) -> PollenSamples:
         return PollenSamples._read_csv(cls, filepath_or_buffer, site=site, index_col=index_col, **kwargs)
     
     @staticmethod
@@ -25,7 +27,7 @@ class PollenSamples:
         return constructor(df, site=site)
 
     @classmethod
-    def read_google_sheet(cls, worksheet: gspread.worksheet.Worksheet, index_col=0):
+    def read_google_sheet(cls, worksheet: gspread.worksheet.Worksheet, index_col=0) -> PollenSamples:
         return PollenSamples._read_google_sheet(cls, cls.sample_type, worksheet, index_col)
 
     @staticmethod
@@ -50,21 +52,21 @@ class PollenSamples:
         return constructor(pd.DataFrame.from_records(data, columns=columns, index=index), site=worksheet.title)
 
     @property
-    def samples(self): return self._samples
+    def samples(self) -> pd.DataFrame: return self._samples
 
     @property
-    def taxas(self): return self._samples.columns
+    def taxas(self) -> pd.Index[str]: return self._samples.columns
         
     @property
-    def site(self): return self._site
+    def site(self) -> str: return self._site
 
-    def apply(self, sample_func):
+    def apply(self, sample_func) -> PollenSamples:
         raise NotImplementedError()
 
-    def get_percentages(self, decimals: int=None): 
+    def get_percentages(self, decimals: int=None) -> PollenPercentages: 
         raise NotImplementedError()
 
-    def get_stabilized(self, default_threshold: float=0.0, decimals: int=2):
+    def get_stabilized(self, default_threshold: float=0.0, decimals: int=2) -> StabilizedPollenSamples:
         percentages = self.get_percentages()
 
         # TODO: support per-taxa thresholds
@@ -83,10 +85,10 @@ class PollenSamples:
 class PollenCounts(PollenSamples):
     sample_type = int
 
-    def apply(self, sample_func):
+    def apply(self, sample_func) -> PollenCounts:
         return PollenCounts(sample_func(self._samples), self._site)
 
-    def get_percentages(self, decimals=None): 
+    def get_percentages(self, decimals=None) -> PollenPercentages: 
         sums = self.samples.sum(axis=1)
         percentages = self.samples.apply(lambda column: column * 100 / sums).fillna(0.0)
 
@@ -99,10 +101,10 @@ class PollenCounts(PollenSamples):
 class PollenPercentages(PollenSamples):
     sample_type = float
 
-    def apply(self, sample_func):
+    def apply(self, sample_func) -> PollenPercentages:
         return PollenPercentages(sample_func(self._samples), self._site)
 
-    def get_percentages(self, decimals=None):
+    def get_percentages(self, decimals=None) -> PollenPercentages:
         if decimals is None:
             return self
         else:
@@ -112,17 +114,17 @@ class PollenPercentages(PollenSamples):
 class StabilizedPollenSamples(PollenSamples):
     sample_type = float
 
-    def __init__(self, samples, decimals, site=None):
+    def __init__(self, samples: pd.DataFrame, decimals:int, site=None):
         super().__init__(samples, site=site)
         self._decimals = decimals
 
     @property
-    def decimals(self): return self._decimals
+    def decimals(self) -> int: return self._decimals
 
-    def apply(self, sample_func):
+    def apply(self, sample_func) -> StabilizedPollenSamples:
         return StabilizedPollenSamples(sample_func(self._samples).round(self._decimals), self._decimals, self._site)
 
-    def get_stabilized(self, default_threshold=0.0, decimals=2):
+    def get_stabilized(self, default_threshold=0.0, decimals=2) -> StabilizedPollenSamples:
         # TODO: round if decimals are fewer than this is set up to use
         return self
 
